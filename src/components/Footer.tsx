@@ -36,7 +36,7 @@ const Footer: React.FC = () => {
               <Linkedin size={18} />
             </a>
             <a 
-              href="tel:+918617429183" 
+              href="tel:+916289648259" 
               className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-blue-600 transition-colors duration-300"
               aria-label="Phone"
             >

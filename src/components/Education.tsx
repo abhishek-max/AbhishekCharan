@@ -74,11 +74,11 @@ const Education: React.FC = () => {
                     <Calendar size={16} className="text-blue-500 mr-2" />
                     <p className="text-gray-600">{item.period}</p>
                   </div>
-                  {item.percentage && (
+                  {/* {item.percentage && (
                     <p className={`text-blue-600 font-medium ${index % 2 === 0 ? 'md:text-right' : 'md:text-left'}`}>
                       Percentage: {item.percentage}
                     </p>
-                  )}
+                  )} */}
                   {item.ongoing && (
                     <div className="mt-2">
                       <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
