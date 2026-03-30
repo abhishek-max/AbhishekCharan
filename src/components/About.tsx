@@ -44,7 +44,7 @@ const About: React.FC = () => {
                 <div>
                   <h4 className="font-semibold text-gray-800 mb-2">Career Objective</h4>
                   <p className="text-gray-700">
-                    MBA student with 5 years of experience in JavaScript, React Native, Python, AI/ML, and financial services, 
+                    MBA student with 2 years of experience in JavaScript, React Native, Python, AI/ML, and financial services, 
                     currently managing investment portfolios at Angel One Ltd.
                   </p>
                 </div>
@@ -78,7 +78,7 @@ const About: React.FC = () => {
                 />
               </div>
               <div className="absolute -bottom-4 -right-4 bg-blue-600 text-white py-2 px-4 rounded-lg shadow-lg">
-                <span className="font-semibold">5+ Years Experience</span>
+                <span className="font-semibold">2+ Years Experience</span>
               </div>
             </div>
           </div>

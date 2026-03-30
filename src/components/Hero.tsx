@@ -41,7 +41,7 @@ const Hero: React.FC<HeroProps> = ({ setActiveSection }) => {
           Tech Enthusiast | Financial Analyst | AI/ML Developer
         </p>
         <p className="max-w-2xl mx-auto text-lg text-blue-100 mb-8 animate-fadeIn animation-delay-400">
-          MBA student with 5 years of experience in technology and financial services, 
+          MBA student with 2 years of experience in technology and financial services, 
           passionate about creating innovative solutions and managing investment portfolios.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4 animate-fadeIn animation-delay-600">
