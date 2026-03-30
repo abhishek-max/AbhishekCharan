@@ -4,6 +4,18 @@ import { Award, FileText, Code, Zap, Trophy } from 'lucide-react';
 const Achievements: React.FC = () => {
   const achievements = [
     {
+      title: "Research Recognition - Doctoral Colloquium",
+      organization: "ISDSI Global",
+      description: "Recognized for contributing to an empirical research study titled “Exploring the Utility of Preventive Healthcare Packages: An In-Depth Analysis of Comprehensive Health Package Subscriptions and Their Correlation with Fasting Blood Sugar Levels.” The study employed a quantitative, cross-sectional and correlational research design, analyzing anonymized diagnostic data of 178 individuals from a leading Indian diagnostic corporation. Using statistical tools such as Independent Samples t-tests and ANOVA, the research examined the relationship between preventive health package subscriptions and metabolic health indicators (Fasting Blood Sugar levels). Key insights revealed that while package subscribers showed marginally lower average FBS levels, the difference was not statistically significant overall. However, a strong age-dependent behavioral pattern emerged—mid-life non-subscribers displayed significantly higher FBS levels, indicating reactive healthcare behavior, whereas senior subscribers used comprehensive packages for chronic disease monitoring and management rather than prevention. The findings provide actionable insights for the Indian diagnostic industry, emphasizing age-segmented healthcare strategies, data-driven preventive care design, and the transition from generic marketing to lifecycle-aligned health solutions.",
+      icon: <Award size={24} className="text-yellow-500" />
+    },
+    {
+      title: "Second Runner-up in Green Bengal Innovation Contest 2025",
+      organization: "Switch On Foundation",
+      description: " ",
+      icon: <Trophy size={24} className="text-yellow-500" />
+    },
+    {
       title: "Winner of Hack-A-Day 2020",
       organization: "ACM",
       description: "Led a team to victory in this 24-hour hackathon, developing an innovative solution for community healthcare tracking.",

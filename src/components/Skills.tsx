@@ -3,13 +3,12 @@ import { Code, Database, BarChart, Brain, Clock, Target } from 'lucide-react';
 
 const Skills: React.FC = () => {
   const technicalSkills = [
-    { name: "Python", proficiency: 90 },
-    { name: "JavaScript", proficiency: 85 },
-    { name: "SQL", proficiency: 80 },
+    { name: "Python", proficiency: 85 },
+    { name: "JavaScript", proficiency: 90 },
+    { name: "SQL", proficiency: 85 },
     { name: "Firebase", proficiency: 75 },
-    { name: "Workday", proficiency: 85 },
+    { name: "Workday", proficiency: 50 },
     { name: "Power BI", proficiency: 80 },
-    { name: "C", proficiency: 70 },
     { name: "Excel", proficiency: 95 },
   ];
 
