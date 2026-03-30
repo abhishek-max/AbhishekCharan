@@ -19,7 +19,7 @@ const Experience: React.FC = () => {
                   <Briefcase size={24} className="text-white mr-3" />
                   <h3 className="text-xl font-bold text-white">Angel One Ltd.</h3>
                 </div>
-                <span className="text-blue-100 font-medium">2019 - Present</span>
+                <span className="text-blue-100 font-medium">Jul 2022 - Aug 2024</span>
               </div>
             </div>
             <div className="p-6">
