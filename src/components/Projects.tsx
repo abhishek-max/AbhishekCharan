@@ -1,218 +1,141 @@
-import React, { useState } from 'react';
-import { Smartphone, Clock, Code, ExternalLink, ChevronRight, ChevronLeft } from 'lucide-react';
+import React from 'react';
+import { ExternalLink, Smartphone, Globe } from 'lucide-react';
+import Section from './Section';
+import Reveal from './Reveal';
+import { featuredProject, projects, otherProjects } from '../data/profile';
+import { useInView } from '../hooks/useInView';
+
+const SPARK =
+  'M0,150 L25,140 L45,146 L70,120 L95,128 L120,104 L140,112 L165,90 L190,96 L215,70 L240,78 L262,58 L290,64 L315,40 L340,48 L365,26 L400,18';
+
+const Sparkline: React.FC = () => {
+  const { ref, inView } = useInView<HTMLDivElement>();
+  return (
+    <div
+      ref={ref}
+      aria-hidden
+      className={`hero-grid relative aspect-[2/1] w-full overflow-hidden rounded-xl bg-ink ${inView ? 'is-visible' : ''}`}
+    >
+      <svg viewBox="0 0 400 200" className="absolute inset-0 h-full w-full" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="spark-area" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#2FD3A6" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#2FD3A6" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path className="spark-area" d={`${SPARK} L400,200 L0,200 Z`} fill="url(#spark-area)" />
+        <path
+          className="spark-line"
+          d={SPARK}
+          pathLength={1}
+          fill="none"
+          stroke="#2FD3A6"
+          strokeWidth="2.5"
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+      <p className="absolute left-4 top-3 font-display text-sm font-semibold text-white/80">
+        Track My Stock
+      </p>
+    </div>
+  );
+};
+
+const TechList: React.FC<{ tech: string[] }> = ({ tech }) => (
+  <ul className="flex flex-wrap gap-2" aria-label="Technologies">
+    {tech.map((t) => (
+      <li key={t} className="tag">
+        {t}
+      </li>
+    ))}
+  </ul>
+);
 
 const Projects: React.FC = () => {
-  const [activeProject, setActiveProject] = useState(0);
-  
-  const projects = [
-    {
-      title: "Track My Stock",
-      status: "Ongoing",
-      description: "Android application designed for Indian stock market investors to track their investments and get real-time market updates.",
-      features: [
-        "Real-time stock tracking with NSE/BSE APIs",
-        "Portfolio management and performance analytics",
-        "Customizable watchlists and alerts",
-        "Technical analysis tools and indicators"
-      ],
-      technologies: ["React Native", "Firebase", "RESTful APIs", "Chart.js"],
-      icon: <Smartphone size={24} className="text-blue-600" />
-    },
-    {
-      title: "AI-Powered Attendance System",
-      description: "Facial recognition-based attendance system for educational institutions and corporate environments.",
-      features: [
-        "Automated attendance tracking using facial recognition",
-        "Real-time reporting and analytics",
-        "Integration with existing student/employee databases",
-        "Mobile app for administrators"
-      ],
-      technologies: ["Python", "OpenCV", "TensorFlow", "Flask", "React"],
-      icon: <Code size={24} className="text-blue-600" />
-    },
-    {
-      title: "Backend Payment Solution for NGO",
-      description: "Secure payment processing system developed for a non-profit organization to handle donations and transactions.",
-      features: [
-        "Secure payment gateway integration",
-        "Donor management system",
-        "Automated receipts and acknowledgments",
-        "Analytics dashboard for donation tracking"
-      ],
-      technologies: ["Node.js", "Express", "MongoDB", "Payment Gateway APIs"],
-      icon: <Code size={24} className="text-blue-600" />
-    },
-    {
-      title: "Dr. Money - Health & Wealth Solutions",
-      description: "Next.js website providing integrated health and financial wellness solutions for users.",
-      features: [
-        "Personalized financial planning tools",
-        "Health expense tracking and management",
-        "Educational resources on health-finance relationship",
-        "Interactive calculators and planners"
-      ],
-      technologies: ["Next.js", "Tailwind CSS", "Firebase", "Chart.js"],
-      icon: <Code size={24} className="text-blue-600" />
-    },
-    {
-      title: "ERP Android App for Inventory Management",
-      description: "Enterprise Resource Planning application focused on inventory management for small businesses.",
-      features: [
-        "Real-time inventory tracking",
-        "Barcode/QR code scanning",
-        "Purchase order management",
-        "Sales and inventory analytics"
-      ],
-      technologies: ["Java", "Android SDK", "SQLite", "RESTful APIs"],
-      icon: <Smartphone size={24} className="text-blue-600" />
-    },
-    {
-      title: "Offline Automatic Video Editing Software",
-      description: "Desktop application for automated video editing without requiring internet connectivity.",
-      features: [
-        "AI-powered scene detection and editing",
-        "Automated color correction and audio enhancement",
-        "Template-based editing for quick results",
-        "Batch processing capabilities"
-      ],
-      technologies: ["Python", "OpenCV", "FFmpeg", "PyQt"],
-      icon: <Code size={24} className="text-blue-600" />
-    },
-    {
-      title: "Sathi - Anonymous Support Platform",
-      description: "Platform providing anonymous peer support for mental health and personal challenges.",
-      features: [
-        "Anonymous messaging and support groups",
-        "Resource library for self-help",
-        "Moderated discussions and safety features",
-        "Optional professional counselor connections"
-      ],
-      technologies: ["React", "Node.js", "Socket.io", "MongoDB"],
-      icon: <Code size={24} className="text-blue-600" />
-    },
-    {
-      title: "Website for Blooming Buds Education Center",
-      description: "Comprehensive website for an educational institution with student and parent portals.",
-      features: [
-        "Course catalog and registration system",
-        "Student progress tracking",
-        "Parent-teacher communication platform",
-        "Online assignment submission and grading"
-      ],
-      technologies: ["WordPress", "PHP", "MySQL", "JavaScript"],
-      icon: <Code size={24} className="text-blue-600" />
-    }
-  ];
-
-  const nextProject = () => {
-    setActiveProject((prev) => (prev === projects.length - 1 ? 0 : prev + 1));
-  };
-
-  const prevProject = () => {
-    setActiveProject((prev) => (prev === 0 ? projects.length - 1 : prev - 1));
-  };
-
+  const fp = featuredProject;
   return (
-    <section id="projects" className="py-20 bg-gray-50">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Projects</h2>
-          <div className="w-20 h-1 bg-blue-600 mx-auto"></div>
-        </div>
-
-        <div className="max-w-6xl mx-auto">
-          {/* Featured Project */}
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-12">
-            <div className="bg-blue-600 px-6 py-4">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center">
-                  {projects[activeProject].icon}
-                  <h3 className="text-xl font-bold text-white ml-3">{projects[activeProject].title}</h3>
-                </div>
-                {projects[activeProject].status && (
-                  <div className="flex items-center">
-                    <Clock size={16} className="text-white mr-2" />
-                    <span className="text-white font-medium">{projects[activeProject].status}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="p-6">
-              <p className="text-gray-700 mb-6">{projects[activeProject].description}</p>
-              
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">Key Features:</h4>
-              <ul className="space-y-2 mb-6">
-                {projects[activeProject].features.map((feature, index) => (
-                  <li key={index} className="flex items-start">
-                    <ChevronRight size={18} className="text-blue-600 mt-1 mr-2 flex-shrink-0" />
-                    <span className="text-gray-700">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">Technologies Used:</h4>
-              <div className="flex flex-wrap gap-2 mb-6">
-                {projects[activeProject].technologies.map((tech, index) => (
-                  <span key={index} className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-                    {tech}
-                  </span>
-                ))}
-              </div>
-              
-              <div className="flex justify-between items-center mt-8">
-                <button 
-                  onClick={prevProject}
-                  className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
-                >
-                  <ChevronLeft size={20} className="mr-1" />
-                  Previous Project
-                </button>
-                <button 
-                  onClick={nextProject}
-                  className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
-                >
-                  Next Project
-                  <ChevronRight size={20} className="ml-1" />
-                </button>
-              </div>
+    <Section id="projects" title="Projects" lede="Things I have built and shipped, starting with the one you can download.">
+      <Reveal as="article" className="rounded-2xl border border-line bg-white p-6 md:p-8">
+        <div className="grid gap-8 lg:grid-cols-5">
+          <div className="lg:col-span-3">
+            <p className="flex items-center gap-2 text-sm font-medium text-gain">
+              <span className="h-2 w-2 rounded-full bg-gain" aria-hidden />
+              Live on Android and the web
+            </p>
+            <h3 className="mt-2 text-2xl font-bold md:text-3xl">{fp.title}</h3>
+            <p className="mt-2 text-mute">{fp.summary}</p>
+            <ul className="mt-4 space-y-2">
+              {fp.points?.map((pt) => (
+                <li key={pt} className="relative pl-5 before:absolute before:left-0 before:top-[0.7em] before:h-1.5 before:w-1.5 before:rounded-full before:bg-gain">
+                  {pt}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-5">
+              <TechList tech={fp.tech} />
             </div>
           </div>
-
-          {/* Project Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project, index) => (
-              <div 
-                key={index}
-                className={`bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg ${
-                  activeProject === index ? 'ring-2 ring-blue-600' : ''
-                }`}
-                onClick={() => setActiveProject(index)}
+          <div className="flex flex-col gap-3 lg:col-span-2">
+            <Sparkline />
+            {fp.links?.map((l, i) => (
+              <a
+                key={l.href}
+                href={l.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={i === 0 ? 'btn-primary' : 'btn-outline'}
               >
-                <div className="p-6">
-                  <div className="flex items-center mb-4">
-                    {project.icon}
-                    <h3 className="text-lg font-semibold text-gray-800 ml-3">{project.title}</h3>
-                  </div>
-                  <p className="text-gray-600 mb-4 line-clamp-2">{project.description}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {project.technologies.slice(0, 3).map((tech, techIndex) => (
-                      <span key={techIndex} className="bg-blue-50 text-blue-700 text-xs font-medium px-2 py-1 rounded-full">
-                        {tech}
-                      </span>
-                    ))}
-                    {project.technologies.length > 3 && (
-                      <span className="bg-gray-100 text-gray-700 text-xs font-medium px-2 py-1 rounded-full">
-                        +{project.technologies.length - 3} more
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
+                {i === 0 ? <Smartphone size={18} aria-hidden /> : <Globe size={18} aria-hidden />}
+                {l.label}
+                <ExternalLink size={14} aria-hidden className="opacity-70" />
+              </a>
             ))}
           </div>
         </div>
+      </Reveal>
+
+      <div className="mt-6 grid gap-6 md:grid-cols-2">
+        {projects.map((p, i) => (
+          <Reveal
+            as="article"
+            key={p.title}
+            delay={i * 120}
+            className="flex flex-col rounded-2xl border border-line bg-white p-6 transition-colors duration-300 hover:border-brand/40"
+          >
+            <h3 className="text-xl font-bold">{p.title}</h3>
+            <p className="mt-2 text-mute">{p.summary}</p>
+            {p.points && (
+              <ul className="mt-3 space-y-1.5 text-[0.95rem]">
+                {p.points.map((pt) => (
+                  <li key={pt} className="relative pl-5 before:absolute before:left-0 before:top-[0.7em] before:h-1.5 before:w-1.5 before:rounded-full before:bg-ink/30">
+                    {pt}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="mt-auto pt-5">
+              <TechList tech={p.tech} />
+            </div>
+          </Reveal>
+        ))}
       </div>
-    </section>
+
+      <Reveal className="mt-14">
+        <h3 className="text-lg font-bold">Earlier builds</h3>
+        <ul className="mt-3 divide-y divide-line border-y border-line">
+          {otherProjects.map((p) => (
+            <li key={p.title} className="grid gap-1 py-4 sm:grid-cols-3 sm:gap-6">
+              <p className="font-medium">{p.title}</p>
+              <p className="text-[0.95rem] text-mute sm:col-span-2">
+                {p.summary}
+                <span className="mt-1 block text-sm text-ink/50">{p.tech.join(', ')}</span>
+              </p>
+            </li>
+          ))}
+        </ul>
+      </Reveal>
+    </Section>
   );
 };
 

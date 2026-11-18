@@ -1,91 +1,185 @@
-import React from 'react';
-import { ArrowDown, Download, Mail, Briefcase } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { Download, Mail } from 'lucide-react';
+import { profile, milestones } from '../data/profile';
 
-interface HeroProps {
-  setActiveSection: (section: string) => void;
+// Chart geometry: x and y in % of the chart box (y from the top).
+// Milestones are spaced evenly so their labels never collide.
+const MILESTONE_Y = [80, 68, 54, 40, 27, 13];
+const DRAW_START = 500; // ms, matches .chart-draw in index.css
+const DRAW_TIME = 2200;
+
+const xAt = (i: number) => 6 + (i * 85) / (milestones.length - 1);
+
+// Small deterministic noise so the line reads like a market chart,
+// but looks the same on every visit.
+function noise(i: number) {
+  const s = Math.sin(i * 12.9898) * 43758.5453;
+  return s - Math.floor(s) - 0.5;
 }
 
-const Hero: React.FC<HeroProps> = ({ setActiveSection }) => {
-  const scrollToProjects = () => {
-    setActiveSection('projects');
-    const element = document.getElementById('projects');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+function buildPath() {
+  const anchors = [
+    { x: 0, y: 90 },
+    ...milestones.map((_, i) => ({ x: xAt(i), y: MILESTONE_Y[i] })),
+    { x: 100, y: 6 },
+  ];
+  const pts: { x: number; y: number }[] = [];
+  let k = 0;
+  for (let a = 0; a < anchors.length - 1; a++) {
+    const p = anchors[a];
+    const q = anchors[a + 1];
+    const steps = Math.max(3, Math.round((q.x - p.x) / 2.2));
+    for (let s = 0; s < steps; s++) {
+      const f = s / steps;
+      const jitter = s === 0 ? 0 : noise(k++) * 7;
+      pts.push({ x: p.x + (q.x - p.x) * f, y: p.y + (q.y - p.y) * f + jitter });
     }
-  };
+  }
+  pts.push(anchors[anchors.length - 1]);
+  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${(p.x * 10).toFixed(1)},${(p.y * 3).toFixed(1)}`).join(' ');
+  const area = `${line} L1000,300 L0,300 Z`;
+  return { line, area };
+}
 
-  const scrollToContact = () => {
-    setActiveSection('contact');
-    const element = document.getElementById('contact');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+const CareerChart: React.FC = () => {
+  const { line, area } = useMemo(buildPath, []);
+  const last = milestones.length - 1;
 
   return (
-    <section id="home" className="relative h-screen flex items-center justify-center bg-gradient-to-r from-blue-800 to-blue-600 text-white">
-      <div className="absolute inset-0 bg-black opacity-50"></div>
-      <div className="container mx-auto px-4 z-10 text-center">
-        <div className="mb-6 inline-block rounded-full p-1 bg-white/10 backdrop-blur-sm">
-          <img
-            // src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=150&h=150&q=80"
-            src="/MyPhoto.jpg"
-            alt="Abhishek Charan"
-            className="w-32 h-32 rounded-full object-cover border-4 border-white/30"
-          />
+    <div aria-hidden>
+      <div className="relative h-[170px] sm:h-[210px] md:h-[240px]">
+        <div className="chart-draw absolute inset-0">
+          <svg viewBox="0 0 1000 300" preserveAspectRatio="none" className="h-full w-full">
+            <defs>
+              <linearGradient id="hero-area" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#2FD3A6" stopOpacity="0.28" />
+                <stop offset="100%" stopColor="#2FD3A6" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path d={area} fill="url(#hero-area)" />
+            <path
+              d={line}
+              fill="none"
+              stroke="#2FD3A6"
+              strokeWidth="2"
+              strokeLinejoin="round"
+              vectorEffect="non-scaling-stroke"
+            />
+          </svg>
         </div>
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 animate-fadeIn">
-          Abhishek Charan
-        </h1>
-        <p className="text-xl md:text-2xl mb-6 text-blue-100 animate-fadeIn animation-delay-200">
-          Tech Enthusiast | Financial Analyst | AI/ML Developer
-        </p>
-        <p className="max-w-2xl mx-auto text-lg text-blue-100 mb-8 animate-fadeIn animation-delay-400">
-          MBA student with 2 years of experience in technology and financial services, 
-          passionate about creating innovative solutions and managing investment portfolios.
-        </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-4 animate-fadeIn animation-delay-600">
-          <a
-            href="/resume.pdf"
-            className="flex items-center justify-center bg-white text-blue-700 hover:bg-blue-50 px-6 py-3 rounded-md font-medium transition-colors duration-300"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Download size={18} className="mr-2" />
-            Download Resume
-          </a>
-          <button
-            onClick={scrollToContact}
-            className="flex items-center justify-center bg-transparent border-2 border-white hover:bg-white/10 px-6 py-3 rounded-md font-medium transition-colors duration-300"
-          >
-            <Mail size={18} className="mr-2" />
-            Contact Me
-          </button>
-          <button
-            onClick={scrollToProjects}
-            className="flex items-center justify-center bg-blue-500 hover:bg-blue-400 px-6 py-3 rounded-md font-medium transition-colors duration-300"
-          >
-            <Briefcase size={18} className="mr-2" />
-            View Projects
-          </button>
-        </div>
+
+        {milestones.map((m, i) => {
+          const x = xAt(i);
+          const y = MILESTONE_Y[i];
+          const delay = DRAW_START + (x / 100) * DRAW_TIME;
+          return (
+            <React.Fragment key={m.label}>
+              {/* drop line from the point to the axis */}
+              <span
+                className="fade-late absolute w-px -translate-x-1/2 border-l border-dashed border-white/20"
+                style={{ left: `${x}%`, top: `${y}%`, bottom: 0, '--delay': `${delay}ms` } as React.CSSProperties}
+              />
+              <span
+                className="milestone absolute block h-3 w-3"
+                style={{ left: `${x}%`, top: `${y}%`, '--delay': `${delay}ms` } as React.CSSProperties}
+              >
+                {i === last && <span className="pulse-ring absolute inset-0 rounded-full bg-gain-bright" />}
+                <span className="absolute inset-0 rounded-full border-2 border-gain-bright bg-ink" />
+              </span>
+            </React.Fragment>
+          );
+        })}
       </div>
-      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <button
-          onClick={() => {
-            setActiveSection('about');
-            const element = document.getElementById('about');
-            if (element) {
-              element.scrollIntoView({ behavior: 'smooth' });
-            }
-          }}
-          className="bg-white/10 backdrop-blur-sm p-3 rounded-full hover:bg-white/20 transition-colors duration-300"
-        >
-          <ArrowDown size={24} className="text-white" />
-        </button>
+
+      {/* Axis labels: years on small screens, two staggered rows of labels on large ones */}
+      <div className="relative h-10 border-t border-white/15 lg:h-[4.75rem]">
+        {milestones.map((m, i) => {
+          const x = xAt(i);
+          const delay = DRAW_START + (x / 100) * DRAW_TIME;
+          const align = i === 0 ? '-translate-x-3' : i === last ? '-translate-x-[calc(100%-0.75rem)]' : '-translate-x-1/2';
+          return (
+            <span
+              key={m.label}
+              className={`hero-in absolute whitespace-nowrap text-xs leading-tight ${
+                i % 2 ? 'lg:top-10' : ''
+              } top-2.5`}
+              style={{ left: `${x}%`, '--delay': `${delay}ms` } as React.CSSProperties}
+            >
+              <span className={`block ${align} lg:text-[0.8rem]`}>
+                <span className="num font-semibold text-gain-bright">{m.year}</span>
+                <span className="hidden text-white/75 lg:inline"> {m.label}</span>
+              </span>
+            </span>
+          );
+        })}
       </div>
-    </section>
+    </div>
   );
 };
+
+const Hero: React.FC = () => (
+  <section id="top" className="relative overflow-hidden bg-ink text-white">
+    <div
+      aria-hidden
+      className="hero-grid pointer-events-none absolute inset-0 [mask-image:linear-gradient(to_bottom,transparent,black_30%,black)]"
+    />
+
+    <div className="relative mx-auto max-w-6xl px-5 pt-24 md:px-8 md:pt-28">
+      <div className="hero-in flex items-center gap-4" style={{ '--delay': '0ms' } as React.CSSProperties}>
+        <img
+          src={profile.photo}
+          alt={profile.name}
+          width={56}
+          height={56}
+          className="h-14 w-14 rounded-full object-cover ring-2 ring-white/20"
+        />
+        <p className="flex items-center gap-2 text-sm text-white/75">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gain-bright opacity-60 motion-reduce:animate-none" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-gain-bright" />
+          </span>
+          {profile.status}
+        </p>
+      </div>
+
+      <h1
+        className="hero-in mt-6 text-[clamp(2.75rem,8vw,6rem)] font-extrabold leading-[0.95] tracking-[-0.035em]"
+        style={{ '--delay': '100ms' } as React.CSSProperties}
+      >
+        {profile.name}
+      </h1>
+      <p
+        className="hero-in mt-5 max-w-3xl font-display text-xl font-medium text-white/90 md:text-2xl"
+        style={{ '--delay': '200ms' } as React.CSSProperties}
+      >
+        {profile.headline}
+      </p>
+      <p
+        className="hero-in mt-4 max-w-3xl text-white/65"
+        style={{ '--delay': '300ms' } as React.CSSProperties}
+      >
+        {profile.intro}
+      </p>
+
+      <div
+        className="hero-in mt-8 flex flex-col gap-3 sm:flex-row"
+        style={{ '--delay': '400ms' } as React.CSSProperties}
+      >
+        <a href={profile.resume} target="_blank" rel="noopener noreferrer" className="btn-primary">
+          <Download size={18} aria-hidden />
+          Download resume
+        </a>
+        <a href="#contact" className="btn-ghost-dark">
+          <Mail size={18} aria-hidden />
+          Get in touch
+        </a>
+      </div>
+
+      <div className="mt-12 pb-6">
+        <CareerChart />
+      </div>
+    </div>
+  </section>
+);
 
 export default Hero;

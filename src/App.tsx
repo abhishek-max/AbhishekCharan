@@ -1,50 +1,36 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import About from './components/About';
-import Education from './components/Education';
 import Experience from './components/Experience';
 import Projects from './components/Projects';
-import Achievements from './components/Achievements';
-import Certifications from './components/Certifications';
 import Skills from './components/Skills';
-import Roles from './components/Roles';
+import Education from './components/Education';
+import Achievements from './components/Achievements';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 
 function App() {
-  const [activeSection, setActiveSection] = useState('home');
-  const [scrollY, setScrollY] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header activeSection={activeSection} setActiveSection={setActiveSection} scrollY={scrollY} />
+    <>
+      <a
+        href="#about"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded-md focus:bg-white focus:px-4 focus:py-2"
+      >
+        Skip to content
+      </a>
+      <Header />
       <main>
-        <Hero setActiveSection={setActiveSection} />
+        <Hero />
         <About />
-        <Education />
         <Experience />
         <Projects />
-        <Achievements />
-        <Certifications />
         <Skills />
-        <Roles />
+        <Education />
+        <Achievements />
         <Contact />
       </main>
       <Footer />
-    </div>
+    </>
   );
 }
 

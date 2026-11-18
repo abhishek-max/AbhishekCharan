@@ -2,12 +2,48 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Abhishek Charan</title>
+    <title>Abhishek Charan | Business Development & Analytics</title>
+    <meta
+      name="description"
+      content="Abhishek Charan: MBA in Business Analytics & Finance and B.Tech in Computer Science. Business development and data analytics, with seven years in financial services."
+    />
+    <meta name="theme-color" content="#0F1B2D" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href="https://abhishekworld.netlify.app/" />
+
+    <!-- Link previews (LinkedIn, WhatsApp, X) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://abhishekworld.netlify.app/" />
+    <meta property="og:title" content="Abhishek Charan | Business Development & Analytics" />
+    <meta
+      property="og:description"
+      content="MBA in Business Analytics & Finance. Business development, dashboards and LLM automations, backed by seven years in financial services."
+    />
+    <meta property="og:image" content="https://abhishekworld.netlify.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Netlify reads this hidden form at deploy time so the React contact form can post to it. -->
+    <form name="contact" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input type="text" name="name" />
+      <input type="email" name="email" />
+      <input type="text" name="subject" />
+      <textarea name="message"></textarea>
+      <input name="bot-field" />
+    </form>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -1,211 +1,151 @@
 import React, { useState } from 'react';
-import { Mail, Linkedin, Phone, Send } from 'lucide-react';
+import { Mail, Linkedin, Phone, MapPin, Github, Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import Section from './Section';
+import Reveal from './Reveal';
+import { profile } from '../data/profile';
+
+type Status = 'idle' | 'sending' | 'sent' | 'error';
+const empty = { name: '', email: '', subject: '', message: '' };
 
 const Contact: React.FC = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  });
-  const [formStatus, setFormStatus] = useState<null | 'success' | 'error'>(null);
+  const [form, setForm] = useState(empty);
+  const [status, setStatus] = useState<Status>('idle');
+  const [sentTo, setSentTo] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Submits to Netlify Forms (see the hidden form in index.html).
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // In a real implementation, you would send the form data to a server
-    console.log('Form submitted:', formData);
-    setFormStatus('success');
-    // Reset form after submission
-    setFormData({
-      name: '',
-      email: '',
-      subject: '',
-      message: ''
-    });
-    // Reset status after 5 seconds
-    setTimeout(() => setFormStatus(null), 5000);
+    setStatus('sending');
+    const botField = (e.currentTarget.elements.namedItem('bot-field') as HTMLInputElement | null)?.value ?? '';
+    try {
+      const res = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ 'form-name': 'contact', 'bot-field': botField, ...form }).toString(),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      setSentTo(form.email);
+      setForm(empty);
+      setStatus('sent');
+    } catch {
+      setStatus('error');
+    }
   };
+
+  const channels = [
+    { icon: Mail, label: 'Email', text: profile.email, href: `mailto:${profile.email}` },
+    { icon: Phone, label: 'Phone', text: profile.phoneDisplay, href: profile.phoneHref },
+    { icon: Linkedin, label: 'LinkedIn', text: profile.linkedinLabel, href: profile.linkedin },
+    ...(profile.github
+      ? [{ icon: Github, label: 'GitHub', text: profile.github.replace(/^https?:\/\//, ''), href: profile.github }]
+      : []),
+    { icon: MapPin, label: 'Based in', text: profile.location },
+  ];
 
   return (
-    <section id="contact" className="py-20 bg-white">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Contact Me</h2>
-          <div className="w-20 h-1 bg-blue-600 mx-auto"></div>
-        </div>
-
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div>
-              <h3 className="text-2xl font-semibold text-gray-800 mb-6">Get In Touch</h3>
-              <p className="text-gray-700 mb-8">
-                I'm always open to discussing new projects, opportunities, or partnerships. 
-                Feel free to reach out using any of the methods below, and I'll get back to you as soon as possible.
-              </p>
-
-              <div className="space-y-6">
-                <div className="flex items-center">
-                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
-                    <Mail size={24} className="text-blue-600" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-medium text-gray-800">Email</h4>
-                    <a 
-                      href="mailto:abhishek2893a@aim.ac.in" 
-                      className="text-blue-600 hover:text-blue-800 transition-colors"
+    <Section id="contact" title="Contact" lede={profile.availability}>
+      <div className="grid gap-10 lg:grid-cols-5">
+        <Reveal className="lg:col-span-2">
+          <ul className="space-y-5">
+            {channels.map(({ icon: Icon, label, text, href }) => (
+              <li key={label} className="flex min-w-0 gap-4">
+                <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
+                  <Icon size={18} aria-hidden />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm text-mute">{label}</p>
+                  {href ? (
+                    <a
+                      href={href}
+                      className="block break-words font-medium hover:text-brand"
+                      {...(href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     >
-                      abhishek2893a@aim.ac.in
+                      {text}
                     </a>
-                  </div>
+                  ) : (
+                    <p className="font-medium">{text}</p>
+                  )}
                 </div>
+              </li>
+            ))}
+          </ul>
+        </Reveal>
 
-                <div className="flex items-center">
-                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
-                    <Linkedin size={24} className="text-blue-600" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-medium text-gray-800">LinkedIn</h4>
-                    <a 
-                      href="https://linkedin.com/in/about-abhishek-charan" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 transition-colors"
-                    >
-                      linkedin.com/in/about-abhishek-charan
-                    </a>
-                  </div>
-                </div>
+        <Reveal delay={120} className="lg:col-span-3">
+          <form
+            name="contact"
+            onSubmit={onSubmit}
+            className="rounded-2xl border border-line bg-white p-6 md:p-8"
+          >
+            <h3 className="text-xl font-bold">Send a message</h3>
 
-                <div className="flex items-center">
-                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
-                    <Phone size={24} className="text-blue-600" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-medium text-gray-800">Phone</h4>
-                    <a 
-                      href="tel:+918617429183" 
-                      className="text-blue-600 hover:text-blue-800 transition-colors"
-                    >
-                      +91 6289648259
-                    </a>
-                  </div>
-                </div>
-              </div>
+            {/* Spam trap: hidden from people, filled in by bots */}
+            <p className="hidden">
+              <label>
+                Leave this empty: <input name="bot-field" tabIndex={-1} autoComplete="off" />
+              </label>
+            </p>
 
-              <div className="mt-12 p-6 bg-blue-50 rounded-lg">
-                <h4 className="text-lg font-semibold text-gray-800 mb-4">Availability</h4>
-                <p className="text-gray-700">
-                  I'm currently pursuing my MBA at Army Institute of Management, Kolkata, but I'm available for:
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium">Name</span>
+                <input className="field" name="name" value={form.name} onChange={onChange} required autoComplete="name" />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium">Email</span>
+                <input className="field" type="email" name="email" value={form.email} onChange={onChange} required autoComplete="email" />
+              </label>
+            </div>
+            <label className="mt-4 block">
+              <span className="mb-1.5 block text-sm font-medium">Subject</span>
+              <input className="field" name="subject" value={form.subject} onChange={onChange} required />
+            </label>
+            <label className="mt-4 block">
+              <span className="mb-1.5 block text-sm font-medium">Message</span>
+              <textarea className="field" name="message" rows={5} value={form.message} onChange={onChange} required />
+            </label>
+
+            <div aria-live="polite">
+              {status === 'sent' && (
+                <p className="lightbox-panel mt-4 flex items-start gap-2 rounded-lg bg-gain/10 p-3 text-sm text-gain">
+                  <CheckCircle2 size={18} className="mt-0.5 shrink-0" aria-hidden />
+                  Message sent. I'll reply to {sentTo} soon.
                 </p>
-                <ul className="mt-4 space-y-2">
-                  <li className="flex items-start">
-                    <span className="text-blue-600 mr-2">•</span>
-                    <span className="text-gray-700">Freelance projects and consulting</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-blue-600 mr-2">•</span>
-                    <span className="text-gray-700">Part-time opportunities</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-blue-600 mr-2">•</span>
-                    <span className="text-gray-700">Collaboration on innovative ideas</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-blue-600 mr-2">•</span>
-                    <span className="text-gray-700">Speaking engagements</span>
-                  </li>
-                </ul>
-              </div>
+              )}
+              {status === 'error' && (
+                <p className="lightbox-panel mt-4 flex items-start gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+                  <AlertCircle size={18} className="mt-0.5 shrink-0" aria-hidden />
+                  <span>
+                    Your message didn't send. Email me at{' '}
+                    <a href={`mailto:${profile.email}`} className="font-medium underline">
+                      {profile.email}
+                    </a>{' '}
+                    instead.
+                  </span>
+                </p>
+              )}
             </div>
 
-            <div>
-              <div className="bg-white rounded-lg shadow-lg p-8">
-                <h3 className="text-2xl font-semibold text-gray-800 mb-6">Send Me a Message</h3>
-                
-                {formStatus === 'success' && (
-                  <div className="mb-6 p-4 bg-green-100 text-green-800 rounded-lg">
-                    Your message has been sent successfully! I'll get back to you soon.
-                  </div>
-                )}
-                
-                {formStatus === 'error' && (
-                  <div className="mb-6 p-4 bg-red-100 text-red-800 rounded-lg">
-                    There was an error sending your message. Please try again later.
-                  </div>
-                )}
-                
-                <form onSubmit={handleSubmit}>
-                  <div className="mb-4">
-                    <label htmlFor="name" className="block text-gray-700 font-medium mb-2">Name</label>
-                    <input 
-                      type="text" 
-                      id="name" 
-                      name="name" 
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-                  
-                  <div className="mb-4">
-                    <label htmlFor="email" className="block text-gray-700 font-medium mb-2">Email</label>
-                    <input 
-                      type="email" 
-                      id="email" 
-                      name="email" 
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-                  
-                  <div className="mb-4">
-                    <label htmlFor="subject" className="block text-gray-700 font-medium mb-2">Subject</label>
-                    <input 
-                      type="text" 
-                      id="subject" 
-                      name="subject" 
-                      value={formData.subject}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-                  
-                  <div className="mb-6">
-                    <label htmlFor="message" className="block text-gray-700 font-medium mb-2">Message</label>
-                    <textarea 
-                      id="message" 
-                      name="message" 
-                      rows={5} 
-                      value={formData.message}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    ></textarea>
-                  </div>
-                  
-                  <button 
-                    type="submit" 
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-300 flex items-center justify-center"
-                  >
-                    <Send size={18} className="mr-2" />
-                    Send Message
-                  </button>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
+            <button type="submit" disabled={status === 'sending'} className="btn-primary mt-5 w-full disabled:opacity-70">
+              {status === 'sending' ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" aria-hidden />
+                  Sending…
+                </>
+              ) : (
+                <>
+                  <Send size={18} aria-hidden />
+                  Send message
+                </>
+              )}
+            </button>
+          </form>
+        </Reveal>
       </div>
-    </section>
+    </Section>
   );
 };
 

@@ -1,119 +1,175 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Menu, X, Download } from 'lucide-react';
+import { profile } from '../data/profile';
 
-interface HeaderProps {
-  activeSection: string;
-  setActiveSection: (section: string) => void;
-  scrollY: number;
-}
+const navItems = [
+  { id: 'about', label: 'About' },
+  { id: 'experience', label: 'Experience' },
+  { id: 'projects', label: 'Projects' },
+  { id: 'skills', label: 'Skills' },
+  { id: 'credentials', label: 'Credentials' },
+  { id: 'awards', label: 'Awards' },
+  { id: 'contact', label: 'Contact' },
+];
 
-const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection, scrollY }) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+const Header: React.FC = () => {
+  const [scrolled, setScrolled] = useState(false);
+  const [active, setActive] = useState('');
+  const [open, setOpen] = useState(false);
+  const progressRef = useRef<HTMLDivElement>(null);
 
-  const navItems = [
-    { id: 'home', label: 'Home' },
-    { id: 'about', label: 'About' },
-    { id: 'education', label: 'Education' },
-    { id: 'experience', label: 'Experience' },
-    { id: 'projects', label: 'Projects' },
-    { id: 'achievements', label: 'Achievements' },
-    { id: 'skills', label: 'Skills' },
-    { id: 'contact', label: 'Contact' },
-  ];
+  // Background change + reading-progress bar. The bar is updated directly
+  // so scrolling never re-renders the whole page.
+  useEffect(() => {
+    let frame = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const y = window.scrollY;
+        setScrolled(y > 40);
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        if (progressRef.current) {
+          progressRef.current.style.transform = `scaleX(${max > 0 ? y / max : 0})`;
+        }
+      });
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, []);
 
-  const scrollToSection = (sectionId: string) => {
-    setActiveSection(sectionId);
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-    setMobileMenuOpen(false);
-  };
+  // Highlight the section currently in the middle of the screen.
+  useEffect(() => {
+    const sections = navItems
+      .map((item) => document.getElementById(item.id))
+      .filter((el): el is HTMLElement => el !== null);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        });
+      },
+      { rootMargin: '-45% 0px -50% 0px' },
+    );
+    sections.forEach((s) => observer.observe(s));
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : '';
+  }, [open]);
+
+  const solid = scrolled || open;
 
   return (
-    <header 
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrollY > 50 ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'
+    <header
+      className={`fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-300 ${
+        open ? 'bg-white shadow-[0_1px_0_#DDE3EB]' : scrolled ? 'bg-white/90 shadow-[0_1px_0_#DDE3EB] backdrop-blur-md' : 'bg-transparent'
       }`}
     >
-      <div className="container mx-auto px-4 flex justify-between items-center">
-        <div className="flex items-center">
-          <h1 className={`text-xl md:text-2xl font-bold ${scrollY > 50 ? 'text-blue-600' : 'text-white'}`}>
-            Abhishek Charan
-          </h1>
-        </div>
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 md:px-8">
+        <a
+          href="#top"
+          className={`font-display text-lg font-bold tracking-tight transition-colors ${
+            solid ? 'text-ink' : 'text-white'
+          }`}
+          onClick={() => setOpen(false)}
+        >
+          {profile.name}
+        </a>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => scrollToSection(item.id)}
-              className={`${
-                activeSection === item.id
-                  ? 'text-blue-600 font-semibold'
-                  : scrollY > 50
-                  ? 'text-gray-700 hover:text-blue-600'
-                  : 'text-white hover:text-blue-200'
-              } transition-colors duration-300`}
-            >
-              {item.label}
-            </button>
-          ))}
+        <nav aria-label="Sections" className="hidden items-center gap-1 lg:flex">
+          {navItems.map((item) => {
+            const isActive = active === item.id;
+            return (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                aria-current={isActive ? 'true' : undefined}
+                className={`relative rounded-md px-3 py-2 text-[0.95rem] transition-colors ${
+                  solid
+                    ? isActive
+                      ? 'text-brand'
+                      : 'text-mute hover:text-ink'
+                    : isActive
+                      ? 'text-white'
+                      : 'text-white/70 hover:text-white'
+                }`}
+              >
+                {item.label}
+                <span
+                  className={`absolute inset-x-3 -bottom-0.5 h-0.5 origin-left rounded-full bg-current transition-transform duration-300 ${
+                    isActive ? 'scale-x-100' : 'scale-x-0'
+                  }`}
+                />
+              </a>
+            );
+          })}
           <a
-            href="/resume.pdf"
-            className="ml-4 flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors duration-300"
+            href={profile.resume}
             target="_blank"
             rel="noopener noreferrer"
+            className="btn-primary ml-3 px-4 py-2 text-sm"
           >
-            <Download size={16} className="mr-2" />
+            <Download size={16} aria-hidden />
             Resume
           </a>
         </nav>
 
-        {/* Mobile Menu Button */}
         <button
-          className="md:hidden text-gray-700"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          type="button"
+          className={`rounded-md p-2 lg:hidden ${solid ? 'text-ink' : 'text-white'}`}
+          aria-label={open ? 'Close menu' : 'Open menu'}
+          aria-expanded={open}
+          aria-controls="mobile-menu"
+          onClick={() => setOpen((o) => !o)}
         >
-          {mobileMenuOpen ? (
-            <X size={24} className={scrollY > 50 ? 'text-gray-700' : 'text-white'} />
-          ) : (
-            <Menu size={24} className={scrollY > 50 ? 'text-gray-700' : 'text-white'} />
-          )}
+          {open ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
-      {/* Mobile Navigation */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-white shadow-lg">
-          <div className="container mx-auto px-4 py-2">
-            <nav className="flex flex-col space-y-3 py-3">
-              {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => scrollToSection(item.id)}
-                  className={`${
-                    activeSection === item.id
-                      ? 'text-blue-600 font-semibold'
-                      : 'text-gray-700 hover:text-blue-600'
-                  } transition-colors duration-300 text-left py-2`}
+      {/* Reading progress */}
+      <div
+        ref={progressRef}
+        aria-hidden
+        className="absolute inset-x-0 bottom-0 h-0.5 origin-left bg-gain"
+        style={{ transform: 'scaleX(0)' }}
+      />
+
+      {open && (
+        <nav
+          id="mobile-menu"
+          aria-label="Sections"
+          className="menu-panel h-[calc(100dvh-4rem)] overflow-y-auto border-t border-line bg-white px-5 pb-8 lg:hidden"
+        >
+          <ul className="divide-y divide-line">
+            {navItems.map((item) => (
+              <li key={item.id}>
+                <a
+                  href={`#${item.id}`}
+                  onClick={() => setOpen(false)}
+                  className={`block py-4 font-display text-xl ${
+                    active === item.id ? 'text-brand' : 'text-ink'
+                  }`}
                 >
                   {item.label}
-                </button>
-              ))}
-              <a
-                href="/resume.pdf"
-                className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors duration-300 w-full"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Download size={16} className="mr-2" />
-                Resume
-              </a>
-            </nav>
-          </div>
-        </div>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <a
+            href={profile.resume}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary mt-6 w-full"
+          >
+            <Download size={18} aria-hidden />
+            Download resume
+          </a>
+        </nav>
       )}
     </header>
   );

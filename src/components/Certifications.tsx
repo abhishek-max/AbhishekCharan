@@ -1,184 +1,144 @@
-import React, { useState } from 'react';
-import { Award, CheckCircle, FileBadge2, Clock, ChevronRight, ChevronLeft } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { BadgeCheck, ChevronLeft, ChevronRight, Expand, X } from 'lucide-react';
+import Reveal from './Reveal';
+import { certificates, otherCertificates } from '../data/profile';
 
+const Lightbox: React.FC<{ index: number; onClose: () => void; onMove: (d: number) => void }> = ({
+  index,
+  onClose,
+  onMove,
+}) => {
+  const cert = certificates[index];
+  const closeRef = useRef<HTMLButtonElement>(null);
 
-const Certifications: React.FC = () => {
-  const [activeProject, setActiveProject] = useState(0);
-  
-  const certifications = [
-    {
-      title: "Business Analysis Fundamentals",
-      issuer: "Microsoft",
-      description: "Comprehensive certification covering essential business analysis methodologies, requirements gathering, and solution assessment techniques.",
-      skills: ["Requirements Analysis", "Process Modeling", "Stakeholder Management"],
-      icon: <FileBadge2 size={24} className="text-blue-600" />,
-      status: "Completed",
-      imageLocation: "/Business Analysis Fundamentals.png"
-    },
-    {
-      title: "NISM-Series-V-A: Mutual Fund Distributors",
-      issuer: "National Institute of Securities Markets",
-      description: "Certification for professionals in the mutual funds distribution sector, covering regulatory and operational aspects of mutual fund sales and service.",
-      skills: ["Mutual Funds", "Financial Products", "Regulatory Compliance"],
-      icon: <FileBadge2 size={24} className="text-blue-600" />,
-      status: "Completed",
-      imageLocation: "/NISM V.png"
-    },
-    {
-      title: "Workday Certification",
-      issuer: "Workday Inc.",
-      description: "Professional certification in Workday's enterprise management cloud solutions, focusing on human capital management and financial applications.",
-      skills: ["HCM", "Financial Management", "Cloud Solutions"],
-      icon: <FileBadge2 size={24} className="text-blue-600" />,
-      status: "Completed",
-      imageLocation: "/Coursera Workday Basic.png"
-    },
-    {
-      title: "Power BI & Python Data Visualization",
-      issuer: "Microsoft & Python Institute",
-      description: "Dual certification in data visualization techniques using Microsoft Power BI and Python libraries for creating impactful visual analytics.",
-      skills: ["Data Visualization", "Dashboard Creation", "Python Libraries"],
-      icon: <FileBadge2 size={24} className="text-blue-600" />,
-      status: "Ongoing",
-      imageLocation: "/Python Certificate.jpeg"
-    },
-    {
-      title: "Microsoft Excel - Advanced Level",
-      issuer: "Microsoft",
-      description: "Advanced certification in Microsoft Excel, covering complex functions, data modeling, automation, and business intelligence features.",
-      skills: ["Advanced Functions", "Pivot Tables", "Data Analysis"],
-      icon: <FileBadge2 size={24} className="text-blue-600" />,
-      status: "Completed",
-      imageLocation: "/Data for Business Analysts Using Microsoft Excel.png"
-    }
-  ];
-
-    const nextProject = () => {
-    setActiveProject((prev) => (prev === certifications.length - 1 ? 0 : prev + 1));
-  };
-
-  const prevProject = () => {
-    setActiveProject((prev) => (prev === 0 ? certifications.length - 1 : prev - 1));
-  };
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    closeRef.current?.focus();
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight') onMove(1);
+      if (e.key === 'ArrowLeft') onMove(-1);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+      previouslyFocused?.focus();
+    };
+  }, [onClose, onMove]);
 
   return (
-    <section id="certifications" className="py-20 bg-gray-50">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Certifications</h2>
-          <div className="w-20 h-1 bg-blue-600 mx-auto"></div>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={cert.title}
+      className="lightbox-backdrop fixed inset-0 z-[60] flex items-center justify-center bg-ink/85 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div className="lightbox-panel relative w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
+        <img
+          key={cert.image}
+          src={cert.image}
+          alt={`${cert.title} certificate`}
+          className="lightbox-panel max-h-[75vh] w-full rounded-lg bg-white object-contain shadow-2xl"
+        />
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-white">
+          <div>
+            <p className="font-display text-lg font-semibold">{cert.title}</p>
+            <p className="text-sm text-white/70">
+              {cert.issuer}, {cert.date}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {cert.verify && (
+              <a href={cert.verify} target="_blank" rel="noopener noreferrer" className="btn-ghost-dark px-4 py-2 text-sm">
+                <BadgeCheck size={16} aria-hidden />
+                Verify on Coursera
+              </a>
+            )}
+            <button type="button" onClick={() => onMove(-1)} className="btn-ghost-dark p-2" aria-label="Previous certificate">
+              <ChevronLeft size={20} />
+            </button>
+            <button type="button" onClick={() => onMove(1)} className="btn-ghost-dark p-2" aria-label="Next certificate">
+              <ChevronRight size={20} />
+            </button>
+          </div>
         </div>
+        <button
+          ref={closeRef}
+          type="button"
+          onClick={onClose}
+          className="absolute -top-3 -right-3 rounded-full bg-white p-2 text-ink shadow-lg hover:bg-paper"
+          aria-label="Close"
+        >
+          <X size={18} />
+        </button>
+      </div>
+    </div>
+  );
+};
 
-        <div className="max-w-6xl mx-auto">
-          {/* Featured Project */}
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-12">
-            <div className="bg-blue-600 px-6 py-4">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center">
-                  {certifications[activeProject].icon}
-                  <h3 className="text-xl font-bold text-white ml-3">{certifications[activeProject].title}</h3>
-                </div>
-                {certifications[activeProject].status && (
-                  <div className="flex items-center">
-                    <Clock size={16} className="text-white mr-2" />
-                    <span className="text-white font-medium">{certifications[activeProject].status}</span>
-                  </div>
+const Certifications: React.FC = () => {
+  const [open, setOpen] = useState<number | null>(null);
+  const close = useCallback(() => setOpen(null), []);
+  const move = useCallback(
+    (d: number) => setOpen((i) => (i === null ? i : (i + d + certificates.length) % certificates.length)),
+    [],
+  );
+
+  return (
+    <>
+      <ul className="grid gap-5 sm:grid-cols-2">
+        {certificates.map((c, i) => (
+          <Reveal as="li" key={c.title} delay={(i % 2) * 100} className="group flex flex-col overflow-hidden rounded-xl border border-line bg-white">
+            <button
+              type="button"
+              onClick={() => setOpen(i)}
+              className="relative block aspect-[4/3] overflow-hidden bg-paper"
+              aria-label={`View ${c.title} certificate`}
+            >
+              <img
+                src={c.thumb}
+                alt=""
+                loading="lazy"
+                width={480}
+                height={360}
+                className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.04]"
+              />
+              <span className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-md bg-ink/80 px-2.5 py-1 text-xs text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100">
+                <Expand size={14} aria-hidden />
+                View
+              </span>
+            </button>
+            <div className="flex flex-1 flex-col p-5">
+              <h4 className="font-display text-lg font-bold leading-snug">{c.title}</h4>
+              <p className="mt-1 text-sm text-mute">{c.issuer}</p>
+              <div className="mt-auto flex items-center justify-between gap-3 pt-4 text-sm">
+                <span className="num text-mute">
+                  {c.date}
+                  {c.note ? `, ${c.note.toLowerCase()}` : ''}
+                </span>
+                {c.verify && (
+                  <a
+                    href={c.verify}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex shrink-0 items-center gap-1 font-medium text-brand hover:underline"
+                  >
+                    <BadgeCheck size={16} aria-hidden />
+                    Verify
+                  </a>
                 )}
               </div>
             </div>
-            <div className="p-6">
-              <p className="text-gray-700 mb-6">{certifications[activeProject].description}</p>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-start-1">
-                  <h4 className="text-lg font-semibold text-gray-800 mb-4">Key Skills:</h4>
-                  <ul className="space-y-2 mb-6">
-                    {certifications[activeProject].skills.map((feature, index) => (
-                      <li key={index} className="flex items-start">
-                        <ChevronRight size={18} className="text-blue-600 mt-1 mr-2 flex-shrink-0" />
-                        <span className="text-gray-700">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="col-end-3">
-                  <div className="w-64 h-40 md:w-56 md:h-40 overflow-hidden border-8 border-gray-200 shadow-xl">
-                  <img 
-                    // src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&h=400&q=80" 
-                    src={certifications[activeProject].imageLocation}
-                    alt="Loading ..." 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                </div>
-              </div>
+          </Reveal>
+        ))}
+      </ul>
+      <p className="mt-5 text-mute">{otherCertificates}</p>
 
-              
-              {/* <h4 className="text-lg font-semibold text-gray-800 mb-4">Technologies Used:</h4>
-              <div className="flex flex-wrap gap-2 mb-6">
-                {certifications[activeProject].technologies.map((tech, index) => (
-                  <span key={index} className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-                    {tech}
-                  </span>
-                ))}
-              </div> */}
-              
-              <div className="flex justify-between items-center mt-8">
-                <button 
-                  onClick={prevProject}
-                  className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
-                >
-                  <ChevronLeft size={20} className="mr-1" />
-                  Previous Project
-                </button>
-                <button 
-                  onClick={nextProject}
-                  className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
-                >
-                  Next Project
-                  <ChevronRight size={20} className="ml-1" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {certifications.map((cert, index) => (
-              <div 
-                key={index} 
-                className="bg-white rounded-lg shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:-translate-y-2"
-              >
-                <div className="bg-blue-600 p-4 flex items-center">
-                  <Award size={24} className="text-white" />
-                  <h3 className="text-lg font-semibold text-white ml-3 truncate">{cert.title}</h3>
-                </div>
-                <div className="p-6">
-                  <p className="text-blue-600 font-medium mb-4">{cert.issuer}</p>
-                  <p className="text-gray-700 mb-4">{cert.description}</p>
-                  <div>
-                    <h4 className="text-sm font-semibold text-gray-800 mb-2">Key Skills:</h4>
-                    <div className="space-y-1">
-                      {cert.skills.map((skill, skillIndex) => (
-                        <div key={skillIndex} className="flex items-center">
-                          <CheckCircle size={16} className="text-green-500 mr-2" />
-                          <span className="text-gray-700 text-sm">{skill}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-12 text-center">
-            <p className="text-gray-700">
-              These certifications represent my commitment to continuous professional development and 
-              expertise across financial services, technology, and business analysis domains.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
+      {open !== null && <Lightbox index={open} onClose={close} onMove={move} />}
+    </>
   );
 };
 
